@@ -112,6 +112,11 @@ void start_server(unsigned short port) {
         boost::asio::io_context io_context;
 
         tcp::acceptor acceptor(io_context, tcp::endpoint(tcp::v4(), port));
+
+        // Set socket options
+        boost::asio::socket_base::reuse_address option(true);
+        acceptor.set_option(option);
+
         cout << "Server is running on port " << port << "\n";
 
         while (true) {
@@ -119,7 +124,8 @@ void start_server(unsigned short port) {
             acceptor.accept(socket);
             thread(handle_client, std::move(socket)).detach();
         }
-    } catch (std::exception& e) {
+    } 
+    catch (std::exception& e) {
         cerr << "Exception: " << e.what() << "\n";
     }
 }
@@ -147,11 +153,18 @@ void send_graph_to_server(const string& host, unsigned short port, const string&
     }
 }
 
-int main(int argc,char* argv[]) {
-    start_server(4050);
-    if(argc == 2){
+int main(int argc, char* argv[]) {
+    thread server_thread([]() {
+        start_server(4050);
+    });
+
+    this_thread::sleep_for(chrono::seconds(1)); // Wait for the server to start
+
+    if (argc == 2) {
         string graph_data = "5 5\n1 2\n2 3\n3 1\n3 4\n4 5\n";
         send_graph_to_server("127.0.0.1", 4050, graph_data);
     }
+
+    server_thread.join();
     return 0;
 }
