@@ -1,18 +1,23 @@
 CXX = clang++
-CXXFLAGS = -std=c++11 -Wall
-BOOST_LIBS = -lboost_system -lpthread
+CXXFLAGS = -std=c++11 -Werror -Wsign-conversion -g
+VALGRIND_FLAGS = -v --leak-check=full --show-leak-kinds=all --error-exitcode=99
 
-SERVER_SRC = ex1.cpp
-SERVER_BIN = ex1
+SOURCES = algo.cpp 
+OBJECTS = $(SOURCES:.cpp=.o)
+EXECUTABLE = algo
 
-CLIENT_SRC = ex1_client.cpp
+.PHONY: all clean valgrind
 
-all: $(SERVER_BIN) $(CLIENT_BIN)
+all: $(EXECUTABLE)
 
-$(SERVER_BIN): $(SERVER_SRC)
-	$(CXX) $(CXXFLAGS) $(SERVER_SRC) -o $(SERVER_BIN) $(BOOST_LIBS)
+$(EXECUTABLE): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+%.o: %.c
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+valgrind: $(EXECUTABLE)
+	valgrind $(VALGRIND_FLAGS) ./$(EXECUTABLE)
 
 clean:
-	rm -f $(SERVER_BIN) $(CLIENT_BIN)
-
-.PHONY: all clean
+	rm -f $(EXECUTABLE) $(OBJECTS)
