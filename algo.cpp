@@ -4,14 +4,14 @@ using namespace std;
 class GFG {
 public:
     // dfs Function to reach destination
-    bool dfs(int curr, int des, vector<vector<int> >& adj, vector<int>& vis) {
+    bool dfs(size_t curr, size_t des, vector<vector<int> >& adj, vector<int>& vis) {
 
         // If curr node is destination return true
         if (curr == des) {
             return true;
         }
         vis[curr] = 1;
-        for (auto x : adj[curr]) {
+        for (int x : adj[curr]) {
             if (!vis[x]) {
                 if (dfs(x, des, adj, vis)) {
                     return true;
@@ -25,8 +25,8 @@ public:
     // destination
     bool isPath(int src, int des, vector<vector<int> >& adj)
     {
-        vector<int> vis(adj.size() + 1, 0);
-        return dfs(src, des, adj, vis);
+        vector<int> vis(adj.size(), 0);
+        return dfs(static_cast<size_t>(src), static_cast<size_t>(des), adj, vis);
     }
 
     // Function to return all the strongly connected
@@ -41,31 +41,31 @@ public:
 
         vector<vector<int> > adj(n + 1);
 
-        for (int i = 0; i < a.size(); i++) {
+        for (size_t i = 0; i < a.size(); i++) {
             adj[a[i][0]].push_back(a[i][1]);
         }
 
         // Traversing all the vertices
-        for (int i = 1; i <= n; i++) {
+        for (size_t i = 1; i <= static_cast<size_t>(n); i++) {
 
             if (!is_scc[i]) {
 
                 // If a vertex i is not a part of any SCC
                 // insert it into a new SCC list and check
                 // for other vertices whether they can be
-                // thr part of thidl ist.
+                // part of this list.
                 vector<int> scc;
-                scc.push_back(i);
+                scc.push_back(static_cast<int>(i));
 
-                for (int j = i + 1; j <= n; j++) {
+                for (size_t j = i + 1; j <= static_cast<size_t>(n); j++) {
 
                     // If there is a path from vertex i to
                     // vertex j and vice versa put vertex j
                     // into the current SCC list.
-                    if (!is_scc[j] && isPath(i, j, adj)
-                        && isPath(j, i, adj)) {
+                    if (!is_scc[j] && isPath(static_cast<int>(i), static_cast<int>(j), adj)
+                        && (isPath(static_cast<int>(j), static_cast<int>(i)))) {
                         is_scc[j] = 1;
-                        scc.push_back(j);
+                        scc.push_back(static_cast<int>(j));
                     }
                 }
 
@@ -82,11 +82,10 @@ public:
 
 int main()
 {
-
     GFG obj;
     int V = 5;
     vector<vector<int> > edges{
-        { 1, 3 }, { 1, 4 }, { 2, 1 }, { 3, 2 }, { 4, 5 }
+        { 1, 2 }, { 2, 3 }, { 1, 3 }, { 4, 3 }, { 5, 4 }
     };
     vector<vector<int> > ans = obj.findSCC(V, edges);
     cout << "Strongly Connected Components are:\n";
