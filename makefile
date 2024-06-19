@@ -1,10 +1,10 @@
 CXX = clang++
-CXXFLAGS = -std=c++11 -Werror -Wsign-conversion -g
+CXXFLAGS = -std=c++11 -Werror -Wsign-conversion -g -pg
 VALGRIND_FLAGS = -v --leak-check=full --show-leak-kinds=all --error-exitcode=99
 
-SOURCES = algo.cpp 
+SOURCES = algo2.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
-EXECUTABLE = algo
+EXECUTABLE = algo2
 
 .PHONY: all clean valgrind
 
