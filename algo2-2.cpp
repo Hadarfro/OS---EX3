@@ -4,33 +4,33 @@ using namespace std;
 class GFG {
 public:
     // dfs function using list
-    bool dfs_list(size_t curr, size_t des, vector<vector<int>>& adj, vector<int>& vis) {
-        list<size_t> stack;
-        stack.push_back(curr);
-        while (!stack.empty()) {
-            size_t node = stack.back();
-            stack.pop_back();
-            if (node == des) {
-                return true;
-            }
-            vis[node] = (size_t)1;
-            for (size_t neighbor = 0; neighbor < adj[node].size(); neighbor++) {
-                if (!vis[static_cast<size_t>(adj[node][neighbor])]) {
-                    stack.push_back(static_cast<size_t>(adj[node][neighbor]));
+        bool dfs_list(size_t curr, size_t des, vector<vector<int>>& adj, vector<int>& vis) {
+            list<size_t> stack;
+            stack.push_back(curr);
+            while (!stack.empty()) {
+                size_t node = stack.back();
+                stack.pop_back();
+                if (node == des) {
+                    return true;
+                }
+                vis[node] = 1;
+                for (size_t neighbor = 0;neighbor < adj[node].size();neighbor++) {
+                    if (!vis[neighbor]) {
+                        stack.push_back(neighbor);
+                    }
                 }
             }
+            return false;
         }
-        return false;
-    }
 
-    // To tell whether there is path from source to destination using list
-    bool isPath_list(int src, int des, vector<vector<int>>& adj) {
-        vector<int> vis(adj.size(), 0);
-        return dfs_list(static_cast<size_t>(src), static_cast<size_t>(des), adj, vis);
-    }
+        // To tell whether there is path from source to destination using list
+        bool isPath_list(int src, int des, vector<vector<int>>& adj) {
+            vector<int> vis(adj.size(), 0);
+            return dfs_list(static_cast<size_t>(src), static_cast<size_t>(des), adj, vis);
+        }
 
-    // Function to return all the strongly connected components of a graph using list
-    vector<vector<int>> findSCC_list(int n, vector<vector<int>>& a) {
+        // Function to return all the strongly connected components of a graph using list
+        vector<vector<int>> findSCC_list(int n, vector<vector<int>>& a) {
             // Stores all the strongly connected components.
             vector<vector<int> > ans;
             size_t num = (size_t)(n + 1);
@@ -114,7 +114,7 @@ public:
         // Connected Component
         vector<int> is_scc(num, 0);
 
-        vector<vector<int> > adj(num);
+        vector<vector<int>> adj(num);
         size_t j = 0;
         size_t k = 0;
         for (size_t i = 0; i < a.size(); i++) {
@@ -155,7 +155,6 @@ public:
         return ans;
     }
 
-    // dfs function using adjacency matrix
        // dfs function using adjacency matrix
     bool dfs_matrix(size_t curr, size_t des, vector<vector<int>>& adj, vector<int>& vis) {
         stack<size_t> stack;
@@ -209,53 +208,57 @@ public:
         return ans;
     }
 
-        // dfs function using vector of lists
-    bool dfs_vector_of_lists(size_t curr, size_t des, vector<list<int>>& adj, vector<int>& vis) {
-        stack<size_t> stack;
-        stack.push(curr);
+    // DFS function using deque for adjacency list representation
+    bool dfs_vector_of_lists(size_t curr, size_t des, const vector<list<int>>& adj, vector<int>& vis) {
+        deque<size_t> stack;
+        stack.push_back(curr);
         while (!stack.empty()) {
-            size_t node = stack.top();
-            stack.pop();
+            size_t node = stack.back();
+            stack.pop_back();
             if (node == des) {
                 return true;
             }
-            vis[node] = (size_t)1;
-            for (int neighbor : adj[node]) {
-                if (!vis[static_cast<size_t>(neighbor)]) {
-                    stack.push(static_cast<size_t>(neighbor));
+            vis[node] = 1;
+            for (size_t neighbor = 0;neighbor < adj.size();neighbor++) {
+                if (!vis[neighbor]) {
+                    stack.push_back(neighbor);
                 }
             }
         }
         return false;
     }
 
-    // To tell whether there is path from source to destination using vector of lists
-    bool isPath_vector_of_lists(int src, int des, vector<list<int>>& adj) {
+    // To tell whether there is a path from source to destination using deque
+    bool isPath_vector_of_lists(int src, int des, const vector<list<int>>& adj) {
         vector<int> vis(adj.size(), 0);
         return dfs_vector_of_lists(static_cast<size_t>(src), static_cast<size_t>(des), adj, vis);
     }
 
-    // Function to return all the strongly connected components of a graph using vector of lists
-    vector<vector<int>> findSCC_vector_of_lists(int n, vector<vector<int>>& a) {
+    // Function to return all the strongly connected components of a graph using deque
+    vector<vector<int>> findSCC_vector_of_lists(int n, const vector<list<int>>& adj) {
+        cout << adj[3].front() << endl;
         vector<vector<int>> ans;
-        size_t num = size_t(n + 1);
-        vector<int> is_scc(num, 0);
-        vector<list<int>> adj(num);
-        for (size_t i = 0; i < a.size(); i++) {
-            adj[static_cast<size_t>(a[i][0])].push_back(static_cast<int>(a[i][1]));
-        }
+        size_t num = (size_t) (n + 1);
+        vector<int> is_scc(num, 0);  // Mark if a vertex is part of any SCC
 
+        // Traversing all the vertices
         for (size_t i = 1; i <= static_cast<size_t>(n); i++) {
             if (!is_scc[i]) {
+                // If a vertex i is not part of any SCC, insert it into a new SCC list
                 vector<int> scc;
                 scc.push_back(static_cast<int>(i));
-                for (size_t j = i + 1; j <= static_cast<size_t>(n); j++) {
-                    if (!is_scc[j] && isPath_vector_of_lists(static_cast<int>(i), static_cast<int>(j), adj)
-                        && isPath_vector_of_lists(static_cast<int>(j), static_cast<int>(i), adj)) {
+
+                for (size_t j = i + 1; j <= static_cast<size_t>(n) ; j++) {
+                    // If there is a path from vertex i to vertex j and vice versa, add vertex j to the current SCC list
+                    if (!is_scc[j] && isPath_vector_of_lists(static_cast<int>(i), static_cast<int>(j), adj) &&
+                        isPath_vector_of_lists(static_cast<int>(j), static_cast<int>(i), adj)) {
                         is_scc[j] = 1;
+                        cout << j << " added to the scc" << endl;
                         scc.push_back(static_cast<int>(j));
                     }
                 }
+
+                // Insert the SCC containing vertex i into the final list
                 ans.push_back(scc);
             }
         }
@@ -268,28 +271,31 @@ int main(int argc, char* argv[]) {
     size_t n = (size_t)atoi(argv[1]);
     int m = atoi(argv[2]);
     string flag = argv[3];
-    size_t num1 = 0, num2 = 0;
-    vector<vector<int>> edges;
+    size_t num1 = 0,num2 = 0;
+    vector<vector<int>> adjMat(n,vector<int>(n, 0));
+    vector<list<int>> adjList(n); // Adjacency list
 
     // Reading edges
     for (size_t i = 0; i < m; i++) {
         cout << "Enter edge: ";
-        cin >> num1 >> num2;
+        cin >> num1; 
+        cin >> num2;
         if (num1 > n || num2 > n) {
             throw invalid_argument("Invalid number\n");
         }
-        edges.push_back({(int)num1 - 1, (int)num2 - 1});
+        adjMat[num1-1][num2-1] = 1;
+        adjList[num1].push_back(num2);
     }
 
     vector<vector<int>> ans;
     if (flag == "-d") {
-        ans = obj.findSCC_deque(n, edges);
+        ans = obj.findSCC_deque(n, adjMat);
     } else if (flag == "-l") {
-        ans = obj.findSCC_list(n, edges);
+        ans = obj.findSCC_list(n, adjMat);
     } else if (flag == "-m") {
-        ans = obj.findSCC_matrix(n, edges);
+        ans = obj.findSCC_matrix(n, adjMat);
     } else if (flag == "-v") {
-        ans = obj.findSCC_vector_of_lists(n, edges);
+        ans = obj.findSCC_vector_of_lists(n, adjList);
     }
 
     cout << "Strongly Connected Components are:\n";
