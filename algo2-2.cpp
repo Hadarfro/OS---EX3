@@ -31,34 +31,53 @@ public:
 
     // Function to return all the strongly connected components of a graph using list
     vector<vector<int>> findSCC_list(int n, vector<vector<int>>& a) {
-        vector<vector<int>> ans;
-        size_t num = (size_t)(n + 1);
-        vector<int> is_scc(num, 0);
-        vector<vector<int>> adj(num);
-        size_t j = 0;
-        size_t k = 0;
-        for (size_t i = 0; i < a.size(); i++) {
-            j = (size_t)a[i][0];
-            k = (size_t)a[i][1];
-            adj[j].push_back(k);
-        }
+            // Stores all the strongly connected components.
+            vector<vector<int> > ans;
+            size_t num = (size_t)(n + 1);
+            // Stores whether a vertex is a part of any Strongly
+            // Connected Component
+            vector<int> is_scc(num, 0);
 
-        for (size_t i = 1; i <= static_cast<size_t>(n); i++) {
-            if (!is_scc[i]) {
-                vector<int> scc;
-                scc.push_back(static_cast<int>(i));
-                for (size_t j = i + 1; j <= static_cast<size_t>(n); j++) {
-                    if (!is_scc[j] && isPath_list(static_cast<int>(i), static_cast<int>(j), adj)
-                        && isPath_list(static_cast<int>(j), static_cast<int>(i), adj)) {
-                        is_scc[j] = 1;
-                        scc.push_back(static_cast<int>(j));
-                    }
-                }
-                ans.push_back(scc);
+            vector<vector<int> > adj(num);
+            size_t j = 0;
+            size_t k = 0;
+            for (size_t i = 0; i < a.size(); i++) {
+                j = (size_t)a[i][0];
+                k = (size_t)a[i][1];
+                adj[j].push_back(k);
             }
+
+            // Traversing all the vertices
+            for (size_t i = 1; i <= static_cast<size_t>(n); i++) {
+
+                if (!is_scc[i]) {
+
+                    // If a vertex i is not a part of any SCC
+                    // insert it into a new SCC list and check
+                    // for other vertices whether they can be
+                    // part of this list.
+                    vector<int> scc;
+                    scc.push_back(static_cast<int>(i));
+
+                    for (size_t j = i + 1; j <= static_cast<size_t>(n); j++) {
+
+                        // If there is a path from vertex i to
+                        // vertex j and vice versa put vertex j
+                        // into the current SCC list.
+                        if (!is_scc[j] && isPath_list(static_cast<int>(i), static_cast<int>(j), adj)
+                            && (isPath_list(static_cast<int>(j), static_cast<int>(i),a))) {
+                            is_scc[j] = 1;
+                            scc.push_back(static_cast<int>(j));
+                        }
+                    }
+
+                    // Insert the SCC containing vertex i into
+                    // the final list.
+                    ans.push_back(scc);
+                }
+            }
+            return ans;
         }
-        return ans;
-    }
 
     // dfs function using deque
     bool dfs_deque(size_t curr, size_t des, vector<vector<int>>& adj, vector<int>& vis) {
@@ -88,10 +107,14 @@ public:
 
     // Function to return all the strongly connected components of a graph using deque
     vector<vector<int>> findSCC_deque(int n, vector<vector<int>>& a) {
-        vector<vector<int>> ans;
+        // Stores all the strongly connected components.
+        vector<vector<int> > ans;
         size_t num = (size_t)(n + 1);
+        // Stores whether a vertex is a part of any Strongly
+        // Connected Component
         vector<int> is_scc(num, 0);
-        vector<vector<int>> adj(num);
+
+        vector<vector<int> > adj(num);
         size_t j = 0;
         size_t k = 0;
         for (size_t i = 0; i < a.size(); i++) {
@@ -100,17 +123,32 @@ public:
             adj[j].push_back(k);
         }
 
+        // Traversing all the vertices
         for (size_t i = 1; i <= static_cast<size_t>(n); i++) {
+
             if (!is_scc[i]) {
+
+                // If a vertex i is not a part of any SCC
+                // insert it into a new SCC list and check
+                // for other vertices whether they can be
+                // part of this list.
                 vector<int> scc;
                 scc.push_back(static_cast<int>(i));
+
                 for (size_t j = i + 1; j <= static_cast<size_t>(n); j++) {
+
+                    // If there is a path from vertex i to
+                    // vertex j and vice versa put vertex j
+                    // into the current SCC list.
                     if (!is_scc[j] && isPath_deque(static_cast<int>(i), static_cast<int>(j), adj)
-                        && isPath_deque(static_cast<int>(j), static_cast<int>(i), adj)) {
+                        && (isPath_deque(static_cast<int>(j), static_cast<int>(i),a))) {
                         is_scc[j] = 1;
                         scc.push_back(static_cast<int>(j));
                     }
                 }
+
+                // Insert the SCC containing vertex i into
+                // the final list.
                 ans.push_back(scc);
             }
         }
