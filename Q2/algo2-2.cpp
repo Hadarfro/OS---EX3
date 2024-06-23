@@ -239,7 +239,7 @@ vector<vector<int>> findSCC_matrix(int n, const vector<vector<int>>& edges) {
 }
 
 
-        // dfs function using vector of lists
+    // dfs function using vector of lists
     bool dfs_vector_of_lists(size_t curr, size_t des, vector<list<int>>& adj, vector<int>& vis) {
         stack<size_t> stack;
         stack.push(curr);
