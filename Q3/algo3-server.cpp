@@ -12,23 +12,21 @@
 #include <sys/wait.h>
 using namespace std;
 
-
 void error(const char *msg) {
     perror(msg);
     exit(1);
 }
 
-void startTCPServer(int port, int &server_sockfd, int &client_sockfd) {
+void startTCPServer(int port, int &server_sockfd) {
     cout << "Starting TCP Server..." << endl;
 
-    struct sockaddr_in serv_addr, cli_addr;
-    socklen_t clilen;
+    struct sockaddr_in serv_addr;
 
     server_sockfd = socket(AF_INET, SOCK_STREAM, 0); // Creating a socket
     if (server_sockfd < 0) {
         error("Error: opening socket");
     }
-    std::cout << "Socket is created successfully!" << std::endl;
+    cout << "Socket is created successfully!" << endl;
 
     // Set SO_REUSEADDR socket option
     int opt = 1;
@@ -45,74 +43,95 @@ void startTCPServer(int port, int &server_sockfd, int &client_sockfd) {
     if (bind(server_sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0) {
         error("Error: on binding");
     }
-    std::cout << "bind() success!" << std::endl;
+    cout << "bind() success!" << endl;
 
     listen(server_sockfd, 5);
-    std::cout << "listening..." << std::endl;
-    clilen = sizeof(cli_addr);
-    client_sockfd = accept(server_sockfd, (struct sockaddr *) &cli_addr, &clilen);
-    if (client_sockfd < 0) {
-        error("Error: on accept");
-    }
-    std::cout << "accept() success!" << std::endl;
+    cout << "listening..." << endl;
 }
 
-int main(int argc,char* argv[]){
-    size_t num1 = 0,num2 = 0;
-    int input_sockfd = -1, output_sockfd = -1;
+int main(int argc, char* argv[]) {
     int server_sockfd = -1, client_sockfd = -1;
-    //bool input_set = false, output_set = false, both_set = false;
     int port = 4050;
-    startTCPServer(port, server_sockfd, client_sockfd);
-    input_sockfd = client_sockfd;
-    //input_set = true;
-    string exec_command = argv[1];
-    printf("input socket = %d\n",input_sockfd);
-    if (exec_command.empty()) {
-        cerr << "No execution command provided." << endl;
-        return 1;
-    }
-    
-    pid_t pid = fork();
-    if (pid == 0) {
+    startTCPServer(port, server_sockfd);
+
+    while (true) {
+        struct sockaddr_in cli_addr;
+        socklen_t clilen = sizeof(cli_addr);
+        client_sockfd = accept(server_sockfd, (struct sockaddr *) &cli_addr, &clilen);
+        if (client_sockfd < 0) {
+            error("Error: on accept");
+        }
+        cout << "accept() success! client_sockfd = " << client_sockfd << endl;
+
+        // Create pipes for stdin and stdout redirection
+        int pipe_in[2];
+        int pipe_out[2];
+
+        if (pipe(pipe_in) == -1 || pipe(pipe_out) == -1) {
+            error("Error: creating pipes");
+        }
+
+        pid_t pid = fork();
+        cout << "fork() success!" << endl;
+
         // Child process
-        
-            fflush(stdin);
-            close(0);
-            if (dup2(input_sockfd, STDIN_FILENO) < 0) {
+        if (pid == 0) {
+            cout << "pid = 0" << endl;
+            close(server_sockfd); // Close the server socket in the child process
+
+            // Redirect stdin to pipe_in[0]
+            close(pipe_in[1]); // Close write end of pipe_in
+            if (dup2(pipe_in[0], STDIN_FILENO) < 0) {
                 cerr << "Failed to redirect stdin" << endl;
                 exit(1);
             }
-            close(input_sockfd);
-        
-        // if (output_set || both_set) {
-        //     fflush(stdout);
-        //     if (dup2(output_sockfd, STDOUT_FILENO) < 0) {
-        //         cerr << "Failed to redirect stdout" << endl;
-        //         exit(1);
-        //     }
-        //     close(output_sockfd);
-        // // }
-        execlp("/bin/sh", "sh", "-c", exec_command.c_str(), (char *)0);
-        cerr << "Failed to execute " << exec_command << endl;
-        exit(1);
-    } 
-    else if (pid > 0) {
-        // Parent process
-       // if (input_set || both_set) {
-            fflush(stdin);
-            close(server_sockfd);
-            close(input_sockfd);
-       // }
-        //if (output_set || both_set) {
-            fflush(stdout);
-            close(output_sockfd);
-       // }
-        waitpid(pid, NULL, 0);
-    } 
-    else {
-        cerr << "Failed to fork" << endl;
-        exit(1);
+            close(pipe_in[0]);
+
+            // Redirect stdout and stderr to pipe_out[1]
+            close(pipe_out[0]); // Close read end of pipe_out
+            if (dup2(pipe_out[1], STDOUT_FILENO) < 0 || dup2(pipe_out[1], STDERR_FILENO) < 0) {
+                cerr << "Failed to redirect stdout or stderr" << endl;
+                exit(1);
+            }
+
+            execlp("algo3", "algo3", (char *)0);
+            cerr << "Failed to execute " << argv[0] << endl;
+            exit(1);
+        } else if (pid > 0) { // Parent process
+            cout << "pid > 0" << endl;
+            close(pipe_in[0]); // Close read end of pipe_in
+            close(pipe_out[1]); // Close write end of pipe_out
+
+            // Read from client socket and write to pipe_in[1]
+            char buffer[256];
+            int n;
+
+            if ((n = read(client_sockfd, buffer, 255)) < 0) {
+                error("Error: reading from client socket");
+            } 
+
+            while ((n = read(client_sockfd, buffer, 255)) > 0) {
+                if (write(pipe_in[1], buffer, (size_t)n) < 0) {
+                    error("Error: writing to pipe_in");
+                }
+            }
+            close(pipe_in[1]); // Close write end of pipe_in
+
+            // Read from pipe_out[0] and write to client socket
+            while ((n = read(pipe_out[0], buffer, 255)) > 0) {
+                if (write(client_sockfd, buffer, (size_t)n) < 0) {
+                    error("Error: writing to client socket");
+                }
+            }
+            close(pipe_out[0]); // Close read end of pipe_out
+
+            waitpid(pid, NULL, 0);
+            close(client_sockfd);
+        } else {
+            cerr << "Failed to fork()" << endl;
+            exit(1);
+        }
     }
+
     return 0;
 }
