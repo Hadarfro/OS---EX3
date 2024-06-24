@@ -104,50 +104,57 @@ class GFG {
 // Driver Code Starts
 
 int main(int argc, char* argv[]){
-    cout << "starting algo3" << endl;
+    cout << "starting algo 3" << endl;
     GFG obj;
     size_t num1 = 0,num2 = 0;
-    string commend = argv[1];
+    string commend = "start";
     size_t n = 0;
     int m = 0;
-    vector<vector<int> > edges(n,vector<int>(n, 0));
-    if(commend == "Newgraph"){
-        n = (size_t)atoi(argv[2]);
-        m = atoi(argv[3]);
+    while(commend != "end"){
+        cout << "enter the commend" << endl;
+        cin >> commend;
         vector<vector<int> > edges(n,vector<int>(n, 0));
-        for(size_t i = 0;i < m;i++){
-            cout << "enter edge: ";
-            cin >> num1;
-            cin >> num2;
-            if(num1 > n || num2 > n){
-                throw invalid_argument("invalid number\n");
+        if(commend == "Newgraph"){
+            n = (size_t)atoi(argv[2]);
+            m = atoi(argv[3]);
+            cout << "enter the n and m" << endl;
+            cin >> n;
+            cin >> m;
+            vector<vector<int> > edges(n,vector<int>(n, 0));
+            for(size_t i = 0;i < m;i++){
+                cout << "enter edge: ";
+                cin >> num1;
+                cin >> num2;
+                if(num1 > n || num2 > n){
+                    throw invalid_argument("invalid number\n");
+                }
+                edges[num1-1][num2-1] = 1;
             }
-            edges[num1-1][num2-1] = 1;
         }
-    }
-       
-    else if(commend == "Kosaraju"){
-        vector<vector<int> > ans;
-        ans = obj.findSCC_vector_of_lists(n, edges);
-        cout << "Strongly Connected Components are:\n";
-        for (auto x : ans) {
-            for (auto y : x) {
-                cout << y << " ";
+        
+        else if(commend == "Kosaraju"){
+            vector<vector<int> > ans;
+            ans = obj.findSCC_vector_of_lists(n, edges);
+            cout << "Strongly Connected Components are:\n";
+            for (auto x : ans) {
+                for (auto y : x) {
+                    cout << y << " ";
+                }
+                cout << "\n";
             }
-            cout << "\n";
         }
-    }
 
-    else if(commend == "Newedge"){
-        size_t i = (size_t)atoi(argv[2]);
-        size_t j = (size_t)atoi(argv[3]);
-        obj.Newedge(i,j,edges);
-    }
+        else if(commend == "Newedge"){
+            size_t i = (size_t)atoi(argv[2]);
+            size_t j = (size_t)atoi(argv[3]);
+            obj.Newedge(i,j,edges);
+        }
 
-    else if(commend == "Removeedge"){
-        size_t i = (size_t)atoi(argv[2]);
-        size_t j = (size_t)atoi(argv[3]);
-        obj.Removeedge(i,j,edges);
+        else if(commend == "Removeedge"){
+            size_t i = (size_t)atoi(argv[2]);
+            size_t j = (size_t)atoi(argv[3]);
+            obj.Removeedge(i,j,edges);
+        }
     }
 
     return 0;
