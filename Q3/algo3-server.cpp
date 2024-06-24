@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
             }
             close(pipe_in[0]);
             
-            // // Redirect stdout and stderr to pipe_out[1]
+            // Redirect stdout and stderr to pipe_out[1]
             close(pipe_out[0]); // Close read end of pipe_out
             fflush(stdout);
             if (dup2(client_sockfd, STDOUT_FILENO) < 0 ) {//removed the part os stderr!!!!
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
             
-            if (execlp("/home/hadarfro/Desktop/OS---EX3/Q3/algo3", "algo3", (char *)0) == -1) {
+            if (execlp("/home/mayrozen/Downloads/study/OS/OS---EX3-main(1)/OS---EX3-main/Q3/algo3", "algo3", (char *)0) == -1) {
                 perror("execlp failed");
             }
             cerr << "Failed to execute " << argv[0] << endl;
