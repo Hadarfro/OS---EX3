@@ -103,8 +103,8 @@ class GFG {
 
 // Driver Code Starts
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
+    cout << "starting algo3" << endl;
     GFG obj;
     size_t num1 = 0,num2 = 0;
     string commend = argv[1];
@@ -149,7 +149,6 @@ int main(int argc, char* argv[])
         size_t j = (size_t)atoi(argv[3]);
         obj.Removeedge(i,j,edges);
     }
-
 
     return 0;
 }

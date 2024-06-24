@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
         if (pid == 0) {
             cout << "pid = 0" << endl;
             close(server_sockfd); // Close the server socket in the child process
-
+            
             // Redirect stdin to pipe_in[0]
             close(pipe_in[1]); // Close write end of pipe_in
             if (dup2(pipe_in[0], STDIN_FILENO) < 0) {
@@ -86,15 +86,17 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
             close(pipe_in[0]);
-
-            // Redirect stdout and stderr to pipe_out[1]
-            close(pipe_out[0]); // Close read end of pipe_out
-            if (dup2(pipe_out[1], STDOUT_FILENO) < 0 || dup2(pipe_out[1], STDERR_FILENO) < 0) {
-                cerr << "Failed to redirect stdout or stderr" << endl;
-                exit(1);
+            
+            // // Redirect stdout and stderr to pipe_out[1]
+            // close(pipe_out[0]); // Close read end of pipe_out
+            // if (dup2(pipe_out[1], STDOUT_FILENO) < 0 ) {//removed the part os stderr!!!!
+            //     cerr << "Failed to redirect stdout or stderr" << endl;
+            //     exit(1);
+            // }
+            
+            if (execlp("/home/hadarfro/Downloads/OS---EX3/Q3/algo3", "algo3", (char *)0) == -1) {
+                perror("execlp failed");
             }
-
-            execlp("algo3", "algo3", (char *)0);
             cerr << "Failed to execute " << argv[0] << endl;
             exit(1);
         } else if (pid > 0) { // Parent process
