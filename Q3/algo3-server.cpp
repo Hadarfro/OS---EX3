@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
                 exit(1);
             }
             
-            if (execlp("/home/mayrozen/Downloads/study/OS/OS---EX3-main(1)/OS---EX3-main/Q3/algo3", "algo3", (char *)0) == -1) {
+            if (execlp("/home/hadarfro/Desktop/OS---EX3/Q3/algo3", "algo3", (char *)0) == -1) {
                 perror("execlp failed");
             }
             cerr << "Failed to execute " << argv[0] << endl;
