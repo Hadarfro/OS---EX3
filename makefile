@@ -1,23 +1,27 @@
 CXX = clang++
-CXXFLAGS = -std=c++11 -Werror -Wsign-conversion -g -pg
+CXXFLAGS = -std=c++11 -Werror -Wsign-conversion -g
 VALGRIND_FLAGS = -v --leak-check=full --show-leak-kinds=all --error-exitcode=99
 
-SOURCES = algo2-2.cpp
+SOURCES = algo3-server.cpp algo3.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
-EXECUTABLE = algo2-2
+EXECUTABLES = algo3-server algo3
 
 .PHONY: all clean valgrind
 
-all: $(EXECUTABLE)
+all: $(EXECUTABLES)
 
-$(EXECUTABLE): $(OBJECTS)
+algo3-server: algo3-server.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-%.o: %.c
+algo3: algo3.o
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-valgrind: $(EXECUTABLE)
-	valgrind $(VALGRIND_FLAGS) ./$(EXECUTABLE)
+valgrind: $(EXECUTABLES)
+	valgrind $(VALGRIND_FLAGS) ./algo3-server
+	valgrind $(VALGRIND_FLAGS) ./algo3
 
 clean:
-	rm -f $(EXECUTABLE) $(OBJECTS)
+	rm -f $(EXECUTABLES) $(OBJECTS)
