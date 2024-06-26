@@ -150,17 +150,19 @@ int main(int argc, char* argv[]){
         cout << "enter the commend Newedge or continue:" << endl;
         cin >> commend;
         if(commend == "Newedge"){
-            size_t i = (size_t)atoi(argv[2]);
-            size_t j = (size_t)atoi(argv[3]);
-            obj.Newedge(i,j,edges);
+            cout << "enter i and j: ";
+            cin >> num1;
+            cin >> num2;
+            obj.Newedge(num1,num2,edges);
         }
 
         cout << "enter the commend Removeedge or continue:" << endl;
         cin >> commend;
         if(commend == "Removeedge"){
-            size_t i = (size_t)atoi(argv[2]);
-            size_t j = (size_t)atoi(argv[3]);
-            obj.Removeedge(i,j,edges);
+            cout << "enter i and j: ";
+            cin >> num1;
+            cin >> num2;
+            obj.Removeedge(num1,num2,edges);
         }
     }
 
