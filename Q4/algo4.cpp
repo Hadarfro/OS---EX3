@@ -106,7 +106,7 @@ class GFG {
 // Driver Code Starts
 
 int main(int argc, char* argv[]){
-    cout << "starting algo 3" << endl;
+    cout << "starting algo 4" << endl;
     string commend = "start";
     
     while(commend != "end"){
@@ -151,8 +151,8 @@ int main(int argc, char* argv[]){
         cin >> commend;
         if(commend == "Newedge"){
             cout << "enter i and j: ";
-                cin >> num1;
-                cin >> num2;
+            cin >> num1;
+            cin >> num2;
             obj.Newedge(num1,num2,edges);
         }
 
@@ -160,8 +160,8 @@ int main(int argc, char* argv[]){
         cin >> commend;
         if(commend == "Removeedge"){
             cout << "enter i and j: ";
-                cin >> num1;
-                cin >> num2;
+            cin >> num1;
+            cin >> num2;
             obj.Removeedge(num1,num2,edges);
         }
     }

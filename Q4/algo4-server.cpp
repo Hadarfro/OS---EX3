@@ -10,7 +10,7 @@
 #include <csignal>
 #include <sys/wait.h>
 
-#define PORT "3490"  // Port to listen on
+#define PORT "9034"  // Port to listen on
 #define BACKLOG 10   // Number of pending connections queue will hold
 
 using namespace std;
@@ -120,7 +120,7 @@ int main() {
                 exit(1);
             }
 
-            if (execlp("/home/hadarfro/Desktop/OS---EX3/Q4/algo4", "algo4", (char *)0) == -1) {
+            if (execlp("/home/mayrozen/Downloads/study/OS/OS---EX3-main/Q4/algo4", "algo4", (char *)0) == -1) {
                 perror("execlp");
                 close(new_fd);
                 exit(1);
