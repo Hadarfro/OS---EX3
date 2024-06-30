@@ -5,7 +5,7 @@ CXX = clang++
 CXXFLAGS = -std=c++11 -Wall -Wextra -Werror
 
 # Source files
-SOURCES = main.cpp Reactor.cpp
+SOURCES = main.cpp Reactor.cpp Proactor.cpp
 
 # Object files
 OBJECTS = $(SOURCES:.cpp=.o)
