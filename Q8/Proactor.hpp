@@ -19,6 +19,9 @@ public:
     pthread_t start();  // Starts the proactor and returns the thread ID
     int stop(pthread_t tid);  // Stops a specific thread given its ID
 
+    // Stops all threads and clears the threads vector
+    void stopAll();
+
 private:
     int listenSock;  // Listening socket descriptor
     proactorFunc func;  // Function pointer for client handling function
@@ -31,9 +34,6 @@ private:
 
     // Static method to wrap the proactorFunc to match pthread_create's signature
     static void *threadFuncWrapper(void *arg);
-
-    // Stops all threads and clears the threads vector
-    void stopAll();
 };
 
 #endif // PROACTOR_HPP

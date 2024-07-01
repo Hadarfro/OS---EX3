@@ -4,6 +4,7 @@
 #include <cstring>
 #include "Proactor.hpp"
 
+// Client handler function
 void *clientHandler(int sockfd) {
     char buffer[1024];
     int bytesRead = read(sockfd, buffer, sizeof(buffer) - 1);
@@ -56,8 +57,12 @@ int main() {
 
     std::cout << "Proactor started, listening on port 9034." << std::endl;
 
-    // Wait for the Proactor thread to finish
-    pthread_join(tid, nullptr);
+    // Wait for a signal or condition to stop the proactor (e.g., a key press)
+    std::cout << "Press Enter to stop the server..." << std::endl;
+    std::cin.get();
+
+    // Stop the Proactor
+    proactor.stopAll();
 
     // Clean up
     close(listenSock);

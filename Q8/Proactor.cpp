@@ -63,7 +63,8 @@ void *Proactor::acceptConnections(void *arg) {
 // Static method that wraps the proactorFunc to match the signature required by pthread_create
 void *Proactor::threadFuncWrapper(void *arg) {
     int sockfd = (intptr_t)arg;  // Cast void pointer argument to int (client socket descriptor)
-    return (proactorFunc(sockfd));  // Call the proactorFunc with the client socket descriptor and return its result
+    Proactor *proactor = static_cast<Proactor *>(arg);  // Get the Proactor instance
+    return proactor->func(sockfd);  // Call the proactor's func with the client socket descriptor and return its result
 }
 
 // Stops all active threads and clears the threads vector
