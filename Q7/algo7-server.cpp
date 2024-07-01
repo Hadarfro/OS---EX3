@@ -11,6 +11,7 @@
 #include <pthread.h>
 #include <vector>
 #include <mutex>
+#include <cstdio>
 
 #define PORT "9034"
 #define BACKLOG 10
@@ -34,18 +35,34 @@ void sigchld_handler(int s) {
 
 void *connection_handler(void *socket_desc) {
     int sock = *(int*)socket_desc;
-    int read_size;
     char client_message[2000];
+    int read_size;
 
     // Receive a message from client
     while ((read_size = recv(sock, client_message, 2000, 0)) > 0) {
         // Null terminate the string
         client_message[read_size] = '\0';
 
-        // Process client_message - pass it to algo7.cpp for handling
+        // Execute algo7 and capture its output
+        FILE *fp = popen("/home/mayrozen/Downloads/study/OS/OS---EX3-main/Q7/algo7", "r");
+        if (fp == NULL) {
+            perror("popen");
+            break;
+        }
 
-        // Example of sending a response back to client:
-        // write(sock, message_to_client , strlen(message_to_client));
+        // Write client message to algo7's stdin
+        fprintf(fp, "%s", client_message);
+        fflush(fp);
+
+        // Read algo4's output from stdout
+        char algo_output[2000];
+        fgets(algo_output, sizeof(algo_output), fp);
+
+        // Close the pipe to algo4
+        pclose(fp);
+
+        // Send algo4's output back to the client
+        write(sock, algo_output, strlen(algo_output));
     }
 
     if (read_size == 0) {
@@ -54,10 +71,11 @@ void *connection_handler(void *socket_desc) {
         perror("recv failed");
     }
 
-    // Free the socket pointer
+    // Free the socket descriptor
+    close(sock);
     free(socket_desc);
 
-    return 0;
+    return NULL;
 }
 
 int main() {
@@ -81,6 +99,7 @@ int main() {
         return 1;
     }
 
+    // Loop through all the results and bind to the first we can
     for (p = servinfo; p != NULL; p = p->ai_next) {
         if ((sockfd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) == -1) {
             perror("server: socket");
@@ -113,6 +132,7 @@ int main() {
         exit(1);
     }
 
+    // Setup signal handler to reap all dead processes
     sa.sa_handler = sigchld_handler;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART;
@@ -135,7 +155,7 @@ int main() {
         inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), s, sizeof s);
         cout << "server: got connection from " << s << endl;
 
-        // Handle connection in a new thread
+        // Create a new thread to handle the client connection
         pthread_t thread_id;
         int *pclient = new int;
         *pclient = new_fd;
@@ -143,6 +163,9 @@ int main() {
             perror("could not create thread");
             return 1;
         }
+
+        // Detach the thread so it can clean up after itself
+        pthread_detach(thread_id);
     }
 
     return 0;
