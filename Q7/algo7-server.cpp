@@ -43,26 +43,44 @@ void *connection_handler(void *socket_desc) {
         // Null terminate the string
         client_message[read_size] = '\0';
 
-        // Execute algo7 and capture its output
-        FILE *fp = popen("/home/mayrozen/Downloads/study/OS/OS---EX3-main/Q7/algo7", "r");
-        if (fp == NULL) {
-            perror("popen");
+        // Create a pipe
+        int pipefd_in[2];
+        int pipefd_out[2];
+        if (pipe(pipefd_in) == -1 || pipe(pipefd_out) == -1) {
+            perror("pipe");
             break;
         }
 
-        // Write client message to algo7's stdin
-        fprintf(fp, "%s", client_message);
-        fflush(fp);
+        pid_t pid = fork();
+        if (pid == -1) {
+            perror("fork");
+            break;
+        }
 
-        // Read algo4's output from stdout
-        char algo_output[2000];
-        fgets(algo_output, sizeof(algo_output), fp);
+        if (pid == 0) { // Child process
+            close(pipefd_in[1]); // Close unused write end
+            dup2(pipefd_in[0], STDIN_FILENO); // Redirect stdin to pipefd_in read end
+            close(pipefd_out[0]); // Close unused read end
+            dup2(pipefd_out[1], STDOUT_FILENO); // Redirect stdout to pipefd_out write end
 
-        // Close the pipe to algo4
-        pclose(fp);
+            execl("/home/mayrozen/Downloads/study/OS/OS---EX3-main/Q7/algo7", "algo7", (char *)NULL);
+            perror("execl");
+            exit(EXIT_FAILURE);
+        } else { // Parent process
+            close(pipefd_in[0]); // Close unused read end
+            write(pipefd_in[1], client_message, strlen(client_message)); // Write client message to pipe
+            close(pipefd_in[1]); // Close write end after writing
 
-        // Send algo4's output back to the client
-        write(sock, algo_output, strlen(algo_output));
+            char algo_output[2000];
+            close(pipefd_out[1]); // Close unused write end
+            read(pipefd_out[0], algo_output, sizeof(algo_output)); // Read output from algo7
+            close(pipefd_out[0]); // Close read end after reading
+
+            // Send algo7's output back to the client
+            write(sock, algo_output, strlen(algo_output));
+        }
+
+        wait(NULL); // Wait for the child process to finish
     }
 
     if (read_size == 0) {
