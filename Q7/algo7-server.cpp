@@ -38,12 +38,12 @@ void *connection_handler(void *socket_desc) {
     char client_message[2000];
     int read_size;
 
-    // Receive a message from client
+    // Receive a message from the client
     while ((read_size = recv(sock, client_message, 2000, 0)) > 0) {
         // Null terminate the string
         client_message[read_size] = '\0';
 
-        // Create a pipe
+        // Create pipes
         int pipefd_in[2];
         int pipefd_out[2];
         if (pipe(pipefd_in) == -1 || pipe(pipefd_out) == -1) {
@@ -58,10 +58,10 @@ void *connection_handler(void *socket_desc) {
         }
 
         if (pid == 0) { // Child process
-            close(pipefd_in[1]); // Close unused write end
-            dup2(pipefd_in[0], STDIN_FILENO); // Redirect stdin to pipefd_in read end
             close(pipefd_out[0]); // Close unused read end
             dup2(pipefd_out[1], STDOUT_FILENO); // Redirect stdout to pipefd_out write end
+            //close(pipefd_in[1]); // Close unused write end
+            dup2(pipefd_in[0], STDIN_FILENO); // Redirect stdin to pipefd_in read end
 
             execl("/home/mayrozen/Downloads/study/OS/OS---EX3-main/Q7/algo7", "algo7", (char *)NULL);
             perror("execl");
@@ -73,14 +73,22 @@ void *connection_handler(void *socket_desc) {
 
             char algo_output[2000];
             close(pipefd_out[1]); // Close unused write end
-            read(pipefd_out[0], algo_output, sizeof(algo_output)); // Read output from algo7
+
+            // Read output from algo7
+            ssize_t n = read(pipefd_out[0], algo_output, sizeof(algo_output) - 1);
+            if (n > 0) {
+                algo_output[n] = '\0'; // Null-terminate the output
+            } else {
+                perror("read");
+                algo_output[0] = '\0';
+            }
             close(pipefd_out[0]); // Close read end after reading
 
             // Send algo7's output back to the client
             write(sock, algo_output, strlen(algo_output));
-        }
 
-        wait(NULL); // Wait for the child process to finish
+            wait(NULL); // Wait for the child process to finish
+        }
     }
 
     if (read_size == 0) {
