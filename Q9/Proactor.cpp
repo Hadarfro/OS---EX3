@@ -47,34 +47,42 @@ void Proactor::stopAll() {
 
 void *Proactor::threadFuncWrapper(void *arg) {
     intptr_t sockfd = (intptr_t)arg;
-    Proactor *proactor = nullptr;
+    Proactor *proactor = reinterpret_cast<Proactor*>(pthread_getspecific(pthread_self()));
 
-    if (proactor) {
-        return proactor->func(sockfd); // Call the function pointer through proactor instance
+    if (proactor && proactor->func) {
+        proactor->func(static_cast<int>(sockfd)); // Call the function pointer with sockfd
     } else {
-        // Handle the case where proactor is nullptr or not found
-        std::cerr << "Proactor instance not found for sockfd: " << sockfd << std::endl;
-        return nullptr; // Or handle the error accordingly
+        std::cerr << "Error: Proactor instance or function pointer not found for sockfd: " << sockfd << std::endl;
     }
 
     return nullptr;
 }
 
+
+
 void *Proactor::acceptConnections(void *arg) {
-    Proactor *proactor = static_cast<Proactor *>(arg);
+    Proactor *proactor = reinterpret_cast<Proactor*>(arg);
+
     while (proactor->running) {
         int clientSock = accept(proactor->listenSock, nullptr, nullptr);
         if (clientSock < 0) {
             perror("accept");
             continue;
         }
+
         pthread_t tid;
-        if (pthread_create(&tid, nullptr, threadFuncWrapper, (void *)(intptr_t)clientSock) != 0) {
+        if (pthread_create(&tid, nullptr, Proactor::threadFuncWrapper, (void *)(intptr_t)clientSock) != 0) {
             perror("pthread_create");
             close(clientSock);
+            continue; // Continue accepting connections on failure
         }
-        std::lock_guard<std::mutex> lock(proactor->mtx);
-        proactor->threads.push_back(tid);
+
+        {
+            std::lock_guard<std::mutex> lock(proactor->mtx);
+            proactor->threads.push_back(tid);
+        }
     }
+
     return nullptr;
 }
+
