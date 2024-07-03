@@ -36,4 +36,10 @@ public:
     static void *threadFuncWrapper(void *arg);
 };
 
+struct ThreadArg {
+    Proactor* proactor;
+    int clientSock;
+};
+
+
 #endif // PROACTOR_HPP

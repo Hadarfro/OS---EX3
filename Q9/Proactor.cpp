@@ -1,5 +1,3 @@
-// Proactor.cpp
-
 #include "Proactor.hpp"
 
 Proactor::Proactor(int listenSock, proactorFunc func)
@@ -12,7 +10,7 @@ Proactor::~Proactor() {
 pthread_t Proactor::start() {
     pthread_t tid;
     this->running = true;
-    std::cout<<"check 1"<<std::endl;
+    std::cout << "check 1" << std::endl;
     if (pthread_create(&tid, nullptr, acceptConnections, this) != 0) {
         perror("pthread_create error");
         return 0;
@@ -24,32 +22,37 @@ pthread_t Proactor::start() {
 }
 
 void *Proactor::threadFuncWrapper(void *arg) {
-    intptr_t sockfd = (intptr_t)arg;
-    Proactor *proactor = reinterpret_cast<Proactor*>(pthread_getspecific(pthread_self()));
+    ThreadArg* threadArg = static_cast<ThreadArg*>(arg);
+    Proactor* proactor = threadArg->proactor;
+    int clientSock = threadArg->clientSock;
 
     if (proactor && proactor->func) {
-        proactor->func(static_cast<int>(sockfd)); // Call the function pointer with sockfd
+        proactor->func(clientSock); // Call the function pointer with clientSock
     } else {
-        std::cerr << "Error: Proactor instance or function pointer not found for sockfd: " << sockfd << std::endl;
+        std::cerr << "Error: Proactor instance or function pointer not found for sockfd: " << clientSock << std::endl;
     }
 
+    delete threadArg; // Clean up dynamically allocated struct
     return nullptr;
 }
 
 void *Proactor::acceptConnections(void *arg) {
     Proactor *proactor = reinterpret_cast<Proactor*>(arg);
 
-    while (proactor->running == true) {
+    while (proactor->running) {
         int clientSock = accept(proactor->listenSock, nullptr, nullptr);
         if (clientSock < 0) {
             perror("accept");
             continue;
         }
 
+        ThreadArg* threadArg = new ThreadArg{proactor, clientSock}; // Allocate struct dynamically
+
         pthread_t tid;
-        if (pthread_create(&tid, nullptr, Proactor::threadFuncWrapper, (void *)(intptr_t)clientSock) != 0) {
+        if (pthread_create(&tid, nullptr, Proactor::threadFuncWrapper, threadArg) != 0) {
             perror("pthread_create error");
             close(clientSock);
+            delete threadArg; // Clean up dynamically allocated struct
             continue; // Continue accepting connections on failure
         }
 
@@ -83,4 +86,3 @@ void Proactor::stopAll() {
     }
     threads.clear();
 }
-
