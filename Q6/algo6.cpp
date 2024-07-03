@@ -105,8 +105,8 @@ class GFG {
 
 // Driver Code Starts
 
-int main1(){
-    cout << "starting algo 4" << endl;
+int main(){
+    cout << "starting algo 6" << endl;
     string commend = "start";
     
     while(commend != "end"){

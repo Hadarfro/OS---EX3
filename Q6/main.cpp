@@ -16,28 +16,35 @@
 
 using namespace std;
 
-void *get_in_addr(struct sockaddr *sa) {
-    if (sa->sa_family == AF_INET) {
-        return &(((struct sockaddr_in*)sa)->sin_addr);
-    }
-    return &(((struct sockaddr_in6*)sa)->sin6_addr);
-}
-
 void handleClientInput(int client_fd) {
-    char buf[256];
-    int nbytes = recv(client_fd, buf, sizeof(buf) - 1, 0);
-    if (nbytes <= 0) {
-        if (nbytes == 0) {
-            cout << "Socket " << client_fd << " hung up" << endl;
-        } else {
-            perror("recv");
+    // Run the algo6 executable when a client connects
+    pid_t pid = fork();
+    if (!pid) { // This is the child process
+
+        // Redirect stdout and stderr to the client socket
+        if (dup2(client_fd, STDOUT_FILENO) == -1 || dup2(client_fd, STDERR_FILENO) == -1) {
+            perror("dup2");
+            close(client_fd);
+            exit(1);
         }
+
+        // Redirect stdout and stderr to the client socket
+        if (dup2(client_fd, STDIN_FILENO) == -1) {
+            perror("dup2");
+            close(client_fd);
+            exit(1);
+        }
+
+        if (execlp("/home/hadarfro/Desktop/OS---EX3/Q6/algo6", "algo6", (char *)0) == -1) {
+            perror("execlp");
+            close(client_fd);
+            exit(1);
+        }
+
         close(client_fd);
-    } else {
-        buf[nbytes] = '\0';
-        cout << "Received: " << buf << " from socket " << client_fd << endl;
-        // Process command or data received
+        exit(0);
     }
+    close(client_fd);
 }
 
 int main() {
@@ -112,12 +119,13 @@ int main() {
     auto acceptClient = [reactor](int listener) {
         struct sockaddr_in clientaddr;
         socklen_t addrlen = sizeof(clientaddr);
-        int new_fd = accept(listener, (struct sockaddr*)&clientaddr, &addrlen);
-        if (new_fd < 0) {
+        int client_fd = accept(listener, (struct sockaddr*)&clientaddr, &addrlen);
+        if (client_fd < 0) {
             perror("accept");
-        } else {
-            addFdToReactor(reactor, new_fd, handleClientInput);
-            cout << "New connection from " << inet_ntoa(clientaddr.sin_addr) << " on socket " << new_fd << endl;
+        } 
+        else {
+            addFdToReactor(reactor, client_fd, handleClientInput);
+            cout << "New connection from " << inet_ntoa(clientaddr.sin_addr) << " on socket " << client_fd << endl;
         }
     };
 

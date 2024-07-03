@@ -1,31 +1,27 @@
-# Compiler
 CXX = clang++
+CXXFLAGS = -std=c++11 -Werror -Wsign-conversion -g
+VALGRIND_FLAGS = -v --leak-check=full --show-leak-kinds=all --error-exitcode=99
 
-# Compiler flags
-CXXFLAGS = -std=c++11 -Wall -Wextra -Werror
-
-# Source files
-SOURCES = main.cpp Reactor.cpp
-
-# Object files
+SOURCES = main.cpp Reactor.cpp algo6.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
+EXECUTABLES = main algo6
 
-# Executable name
-EXECUTABLE = main
+.PHONY: all clean valgrind
 
-# Target to create the executable
-all: $(EXECUTABLE)
+all: $(EXECUTABLES)
 
-$(EXECUTABLE): $(OBJECTS)
+main: main.o Reactor.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-# Target to compile source files into object files
+algo6: algo6.o
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
 %.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-# Target to clean the build files
+valgrind: $(EXECUTABLES)
+	valgrind $(VALGRIND_FLAGS) ./algo3-server
+	valgrind $(VALGRIND_FLAGS) ./algo3
+
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE)
-
-# Phony targets
-.PHONY: all clean
+	rm -f $(EXECUTABLES) $(OBJECTS)
