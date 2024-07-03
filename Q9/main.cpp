@@ -31,7 +31,7 @@ void *handleClientInput(int client_fd) {
         }
 
         // Execute the server-side process or program
-        if (execlp("/path/to/your/server/program", "server_program", (char *)0) == -1) {
+        if (execlp("/home/mayrozen/Downloads/study/OS/OS---EX3-main/Q9/algo9", "algo9", (char *)0) == -1) {
             perror("execlp");
             close(client_fd);
             exit(1);
