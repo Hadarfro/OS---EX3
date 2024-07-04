@@ -6,8 +6,7 @@ SOURCES = algo2-2.cpp TestCounter.cpp Test.cpp
 OBJECTS = $(SOURCES:.cpp=.o)
 
 run: algo2-2 test
-	./algo2-2
-	./test
+	
 
 algo2-2: algo2-2.o $(filter-out TestCounter.o Test.o, $(OBJECTS))
 	$(CXX) $(CXXFLAGS) -v $^ -o algo2-2

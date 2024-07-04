@@ -160,7 +160,7 @@ class GFG {
 
 // Driver Code Starts
 
-int main(int argc, char* argv[])
+int main1(int argc, char* argv[])
 {
     GFG obj;
     size_t n = (size_t)atoi(argv[1]);
