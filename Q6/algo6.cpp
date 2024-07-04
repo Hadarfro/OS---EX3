@@ -104,8 +104,7 @@ class GFG {
 
 
 // Driver Code Starts
-
-int main(){
+int main(int argc, char* argv[]){
     cout << "starting algo 6" << endl;
     string commend = "start";
     
@@ -113,6 +112,7 @@ int main(){
         GFG obj;
         size_t num1 = 0,num2 = 0;
         size_t n = 0, m = 0;
+        vector<vector<int> > ans; // For saving our graph for making add/remove edge
         cout << "enter the commend" << endl;
         cin >> commend;
         vector<vector<int> > edges(n,vector<int>(n, 0));
@@ -135,7 +135,6 @@ int main(){
             cout << "enter the commend kosaraju:" << endl;
             cin >> commend;
             if(commend == "kosaraju"){
-                vector<vector<int> > ans; // For saving our graph for making add/remove edge
                 ans = obj.findSCC_vector_of_lists(n, edges);
                 cout << "Strongly Connected Components are:\n";
                 for (auto x : ans) {

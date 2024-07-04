@@ -20,8 +20,8 @@ algo6: algo6.o
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 valgrind: $(EXECUTABLES)
-	valgrind $(VALGRIND_FLAGS) ./algo3-server
-	valgrind $(VALGRIND_FLAGS) ./algo3
+	valgrind $(VALGRIND_FLAGS) ./main
+	valgrind $(VALGRIND_FLAGS) ./algo6
 
 clean:
 	rm -f $(EXECUTABLES) $(OBJECTS)
